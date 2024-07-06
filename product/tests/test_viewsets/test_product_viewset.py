@@ -33,14 +33,14 @@ class TestProductViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         product_data = json.loads(response.content)
 
-        print(product_data)
+        self.assertIsInstance(product_data, dict)
+        self.assertIn('results', product_data)
+        self.assertIsInstance(product_data['results'], list)
+        self.assertGreater(len(product_data['results']), 0)
 
-        self.assertIsInstance(product_data, list)
-        self.assertGreater(len(product_data), 0)
-
-        self.assertEqual(product_data[0]["title"], self.product.title)
-        self.assertEqual(product_data[0]["price"], self.product.price)
-        self.assertEqual(product_data[0]["active"], self.product.active)
+        self.assertEqual(product_data['results'][0]["title"], self.product.title)
+        self.assertEqual(product_data['results'][0]["price"], self.product.price)
+        self.assertEqual(product_data['results'][0]["active"], self.product.active)
 
     def test_create_product(self):
         token = Token.objects.get(user__username=self.user.username)
