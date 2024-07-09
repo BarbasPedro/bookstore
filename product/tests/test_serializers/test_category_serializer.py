@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 
 from product.factories import CategoryFactory, ProductFactory
