@@ -28,9 +28,20 @@ jobs:
       run: poetry --help
 
     - name: Install dependencies
-      shell: bash
-      run: python -m poetry install
+      run: poetry install
 
-    - name: Test
-      run: |
-        poetry run python manage.py test
+    - name: Set environment variables
+      run: echo "DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]" >> $GITHUB_ENV
+
+    - name: Run tests
+      env:
+        DEBUG: '1'
+        SECRET_KEY: 'foo'
+        DJANGO_ALLOWED_HOSTS: 'localhost 127.0.0.1 [::1]'
+        SQL_ENGINE: 'django.db.backends.postgresql'
+        SQL_DATABASE: 'bookstore_dev_db'
+        SQL_USER: 'bookstore_dev'
+        SQL_PASSWORD: 'bookstore_dev'
+        SQL_HOST: 'db'
+        SQL_PORT: '5432'
+      run: poetry run python manage.py test
