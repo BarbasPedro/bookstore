@@ -1,37 +1,23 @@
-# Usar imagem base oficial do Python
-FROM python:3.10-slim as python-base
+# Usando uma imagem base oficial do Python.
+FROM python:3.10
 
-# Definindo variáveis de ambiente
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Atualizar e instalar dependências necessárias
-RUN apt-get update \
-    && apt-get install -y curl build-essential libpq-dev \
-    && apt-get clean
-
-# Instalar Poetry usando o novo script
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-# Adicionar Poetry ao PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# Definir o diretório de trabalho no contêiner
+# Configurando o diretório de trabalho dentro do contêiner.
 WORKDIR /app
 
-# Copiar os arquivos de requisitos e instalá-los
+# Copiando o arquivo de configuração do Poetry para o contêiner.
 COPY poetry.lock pyproject.toml /app/
-RUN poetry install --no-root
 
-# Copiar o restante do código da aplicação
+# Instalando o Poetry.
+RUN pip install poetry
+
+# Instalando as dependências do projeto.
+RUN poetry config virtualenvs.create false && poetry install
+
+# Copiando o restante do código do aplicativo.
 COPY . /app/
 
-# Instalar psycopg2 para o PostgreSQL
-RUN apt-get install -y libpq-dev gcc \
-    && poetry run pip install psycopg2-binary
-
-# Expor a porta que a aplicação irá rodar
+# Expondo a porta 8000 para o serviço web.
 EXPOSE 8000
 
-# Comando para rodar a aplicação
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Comando padrão para iniciar o servidor Django.
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
