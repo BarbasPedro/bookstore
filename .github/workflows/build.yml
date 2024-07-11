@@ -7,9 +7,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.10]
 
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: bookstore_dev_db
+          POSTGRES_USER: bookstore_dev
+          POSTGRES_PASSWORD: bookstore_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v2
@@ -24,11 +39,15 @@ jobs:
         python -m ensurepip
         python -m pip install --upgrade pip
         python -m pip install --upgrade poetry
-    - name: View poetry --help
-      run: poetry --help
 
     - name: Install dependencies
       run: poetry install
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        until pg_isready -h localhost -p 5432; do
+          sleep 1
+        done
 
     - name: Set environment variables
       run: echo "DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]" >> $GITHUB_ENV
@@ -42,6 +61,6 @@ jobs:
         SQL_DATABASE: 'bookstore_dev_db'
         SQL_USER: 'bookstore_dev'
         SQL_PASSWORD: 'bookstore_dev'
-        SQL_HOST: 'db'
+        SQL_HOST: 'localhost'
         SQL_PORT: '5432'
       run: poetry run python manage.py test
