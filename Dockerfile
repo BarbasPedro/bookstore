@@ -16,8 +16,8 @@ RUN poetry config virtualenvs.create false && poetry install
 # Copiando o restante do código do aplicativo.
 COPY . /app/
 
-# Instalando o Gunicorn na imagem.
-RUN pip install gunicorn
+# Coletando os arquivos estáticos
+RUN python manage.py collectstatic --noinput
 
 # Expondo a porta 8000 para o serviço web.
 EXPOSE 8000
